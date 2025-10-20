@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MusicChain Multi-Chain Wallet — Receive ERC20</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Ethers v5 (UMD) -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body class="aero">
+  <header class="nav">
+    <div class="brand">
+      <img src="logo.png" alt="MusicChain Wallet" class="logo" />
+      <span>MusicChain Wallet</span>
+    </div>
+    <nav class="menu">
+      <button id="menu-toggle" class="burger" aria-label="menu">☰</button>
+      <ul id="nav-links">
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#receive">Receive</a></li>
+        <li><a href="#monitor">Monitor</a></li>
+        <li><a href="#account">Account</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="account" class="card">
+      <h2>Sign up / Login</h2>
+
+      <div class="auth-forms">
+        <div class="form">
+          <h3>Create new wallet</h3>
+          <label>Password (to encrypt local wallet)
+            <input id="signup-password" type="password" placeholder="Strong password" />
+          </label>
+          <button id="create-wallet">Create Wallet</button>
+          <p class="muted">Generates a new wallet encrypted in your browser. Save your seed phrase safely.</p>
+          <pre id="mnemonic" class="mnemonic hidden"></pre>
+        </div>
+
+        <div class="form">
+          <h3>Import / Login</h3>
+          <label>Paste mnemonic or private key
+            <input id="import-key" type="text" placeholder="mnemonic or 0xprivatekey" />
+          </label>
+          <label>Password (to encrypt after import)
+            <input id="import-password" type="password" placeholder="Encryption password" />
+          </label>
+          <button id="import-wallet">Import Wallet</button>
+
+          <hr />
+          <h4>Login with encrypted JSON</h4>
+          <label>Encrypted JSON
+            <textarea id="encrypted-json" placeholder='{"version":...}'></textarea>
+          </label>
+          <label>Password
+            <input id="decrypt-password" type="password" />
+          </label>
+          <button id="unlock-wallet">Unlock</button>
+          <button id="download-json" class="muted">Download encrypted JSON</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="card hidden">
+      <div class="row">
+        <div>
+          <h2>Your Wallet</h2>
+          <p>Address: <span id="address" class="mono"></span>
+            <button id="copy-address">Copy</button>
+            <button id="show-qr">QR</button>
+          </p>
+          <p>Configured Chains:
+            <select id="chain-select"></select>
+          </p>
+          <p>Balance: <span id="native-balance">—</span></p>
+        </div>
+        <div class="actions">
+          <button id="logout" class="danger">Logout</button>
+          <button id="export-json">Export encrypted JSON</button>
+        </div>
+      </div>
+
+      <section id="chains-config" class="panel">
+        <h3>Chains configuration (add multiple)</h3>
+        <p>Enter chain IDs and optional RPCs. Examples:
+          <code>1</code>, <code>137: https://polygon-rpc.com</code>, <code>56:https://bsc-dataseed.binance.org/</code>
+        </p>
+        <label>Chains (comma or newline separated) — allowed formats:
+          <ul>
+            <li><code>chainId</code> (uses known defaults)</li>
+            <li><code>chainId:rpc</code> (specify custom RPC)</li>
+          </ul>
+          <textarea id="chains-input" placeholder="137, 1, 5:https://rpc.ankr.com/eth_goerli"></textarea>
+        </label>
+        <button id="apply-chains">Apply Chains</button>
+        <p class="muted">These chains will be monitored and used for balance checks and receiving.</p>
+      </section>
+
+      <section id="receive" class="panel">
+        <h3>Receive</h3>
+        <p>Choose chain to generate receiving address / QR and provide to the site (musicchain.netlify.app).</p>
+        <label>Chain
+          <select id="receive-chain"></select>
+        </label>
+        <p>Your receive address for selected chain: <span id="receive-address" class="mono"></span></p>
+        <p>Share this link with the site so it can send tokens automatically:
+          <input id="receive-link" readonly />
+          <button id="copy-receive-link">Copy</button>
+        </p>
+        <p class="muted">To accept ERC20 tokens, the site (or anyone) must transfer tokens to this address. This app will monitor incoming transfers and show TX hashes.</p>
+      </section>
+
+      <section id="monitor" class="panel">
+        <h3>Monitor incoming transfers</h3>
+
+        <label>Site address to monitor (e.g., musicchain payout address)
+          <input id="site-address" placeholder="0x..." />
+        </label>
+        <div class="row small">
+          <label>Chains to monitor (multi-select)
+            <select id="monitor-chains" multiple size="4"></select>
+          </label>
+          <div>
+            <label>Token contract addresses to watch (comma separated, optional)
+              <input id="monitor-tokens" placeholder="0xToken1,0xToken2" />
+            </label>
+            <button id="start-monitor">Start Monitoring</button>
+            <button id="stop-monitor" class="danger hidden">Stop</button>
+          </div>
+        </div>
+
+        <h4>Activity</h4>
+        <ul id="activity" class="activity-list"></ul>
+      </section>
+
+      <section class="panel">
+        <h3>Optional: Send tokens (via local encrypted wallet)</h3>
+        <label>To address
+          <input id="send-to" placeholder="0x..." />
+        </label>
+        <label>Chain
+          <select id="send-chain"></select>
+        </label>
+        <label>Token contract (leave empty for native)
+          <input id="send-token" placeholder="0xToken or leave blank" />
+        </label>
+        <label>Amount
+          <input id="send-amount" placeholder="Amount" />
+        </label>
+        <button id="send-tx">Send</button>
+      </section>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div>
+      <strong>MusicChain Wallet</strong> — Accept ERC20 tokens from your site (musicchain.netlify.app).
+    </div>
+    <div class="muted">Built with Aero UI style. Mobile-first responsive layout.</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
